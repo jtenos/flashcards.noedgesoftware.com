@@ -2,7 +2,7 @@
 
 const dataAccess = require("../dataAccess");
 const allModels = require("../models/allModels");
-const JoeTest = allModels.JoeTest;
+const User = allModels.User;
 const utils = require("../utils");
 
 module.exports = {
@@ -31,14 +31,9 @@ module.exports = {
     },
 
     test: (query, callback, errorCallback) => {
-        var partitionKey = "part";
-        var rowKey = Math.random().toString();
-        var dataObject = new JoeTest("Bill", 34);
-        dataObject.PartitionKey = partitionKey;
-        dataObject.RowKey = rowKey;
 
-        var rand = utils.createRandom(24);
-        callback({val: rand});
+        var dataObject = new User(utils.createRandom(24));
+        dataAccess.insert({ dataObject: dataObject }, callback, errorCallback);
 
         //dataAccess.insert({dataObject: dataObject}, callback,errorCallback);
         //dataAccess.getMany({modelType: JoeTest}, callback, errorCallback);

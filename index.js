@@ -4,6 +4,9 @@ console.log('Loading function');
 const doc = require('dynamodb-doc');
 const dynamo = new doc.DynamoDB();
 
+const allManagers = require("./managers/allManagers");
+const appManager = allManagers.app;
+
 /**
  * To scan a DynamoDB table, make a GET request with the TableName as a
  * query string parameter. To put, update, or delete an item, make a POST,
@@ -13,14 +16,19 @@ const dynamo = new doc.DynamoDB();
 exports.handler = (event, context, callback) => {
     const done = (err, res) => callback(null, {
         statusCode: err ? '400' : '200',
-        body: err ? err.message : JSON.stringify(res),
+        body: (err && err.message) ? err.message : JSON.stringify(res),
         headers: {
             'Content-Type': 'application/json',
         },
     });
 
-    done(null, "Hello!");
+    appManager.test({}, (result) => {
+        done(null, result);
+    }, (result) => {
+        done(result);
+    });
     return;
+
     switch (event.httpMethod) {
         case 'DELETE':
             dynamo.deleteItem(JSON.parse(event.body), done);

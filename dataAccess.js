@@ -1,26 +1,24 @@
 "use strict";
 
-const config = require("./config");
-const azure = require("azure-storage");
-const tableService = azure.createTableService(config.connectionString);
-const entGen = azure.TableUtilities.entityGenerator;
+const dynamodbDoc = require("dynamodb-doc");
+const dynamo = new dynamodbDoc.DynamoDB();
 
 /*
-    Azure table operators:
-    eq (default), gt, ge, lt, le, ne
+        case 'DELETE':
+            dynamo.deleteItem(JSON.parse(event.body), done);
+        case 'GET':
+            dynamo.scan({ TableName: event.queryStringParameters.TableName }, done);
+        case 'POST':
+            dynamo.putItem(JSON.parse(event.body), done);
+        case 'PUT':
+            dynamo.updateItem(JSON.parse(event.body), done);
 */
 
 let dataAccess = module.exports = {
 
     // callback: (err, result, response)
     createTable: (tableName, callback, errorCallback) => {
-        tableService.createTableIfNotExists(tableName, (err, result, response) => {
-            if (err) {
-                errorCallback(`${err}: dataAccess.createTable`);
-                return;
-            }
-            callback();
-        });
+        errorCallback("createTable Not implemented");
     },
 
     // same options as getMany
@@ -28,19 +26,19 @@ let dataAccess = module.exports = {
         dataAccess.getMany(options, items => callback(items[0]), errorCallback);
     },
 
-    // options: { modelType, fieldNames, whereClauses } 
-    // whereClauses: [
-    //     { name: "PartitionKey": value: "abc" }, // default is "eq"
-    //     { name: "someval", operator: "le", value: 34 }   
+    // options: { modelType, fieldNames, whereClauses }
+    // whereClauses: [ TODO: FIGURE THIS OUT
     // ]
     // callback: function(items)
+
     getMany: (options, callback, errorCallback) => {
         try {
-            var query = new azure.TableQuery();
-            if (options.fieldNames && options.fieldNames.length) {
-                query = query.select(options.fieldNames);
-            }
+            // TODO: Figure out defining columns and where clauses
+            dynamo.scan({
+                TableName: options.modelType.getTableName()
+            }, callback);
 
+            /*
             if (options.whereClauses && options.whereClauses.length) {
                 let whereClauseItems = [];
                 let whereClauseValues = [];
@@ -60,29 +58,7 @@ let dataAccess = module.exports = {
 
                 query = query.where(whereText, whereClauseValues);
             }
-
-            tableService.queryEntities(options.modelType.getTableName(), query, null, (err, result, response) => {
-                if (err) {
-                    errorCallback(`${err}: dataAccess.getMany.queryEntities`);
-                    return;
-                }
-
-                try {
-                    let items = [];
-                    result.entries.forEach(val => {
-                        let item = new options.modelType();
-                        for (let key in val) {
-                            if (val.hasOwnProperty(key)) {
-                                item[key] = val[key]._;
-                            }
-                        }
-                        items.push(item);
-                    });
-                    callback(items);
-                } catch (ex) {
-                    errorCallback(`${ex}: dataAccess.getMany.map`);
-                }
-            });
+            */
         } catch (ex) {
             errorCallback(`${ex}: dataAccess.getMany`);
         }
@@ -92,13 +68,11 @@ let dataAccess = module.exports = {
     // callback: function()
     insert: (options, callback, errorCallback) => {
         try {
-            tableService.insertEntity(options.dataObject.getTableName(), options.dataObject, (err, result, response) => {
-                if (err) {
-                    errorCallback(`${err}: dataAccess.insert.insertEntity`);
-                    return;
-                }
-                callback();
-            });
+            var params = {
+                TableName: options.dataObject.getTableName(),
+                Item: options.dataObject
+            };
+            dynamo.put(params, callback);
         } catch (ex) {
             errorCallback(`${ex}: dataAccess.insert`);
         }
@@ -107,54 +81,17 @@ let dataAccess = module.exports = {
     // options: { dataObject }
     update: (options, callback, errorCallback) => {
         try {
-            tableService.replaceEntity(options.dataObject.getTableName(), options.dataObject, (errr, result, response) => {
-                if (err) {
-                    errorCallback(`${ex}: dataAccess.update.replaceEntity`);
-                    return;
-                }
-
-                callback({});
-            });
+            dynamo.updateItem(JSON.parse(options.dataObject), callback);
         } catch (ex) {
             errorCallback(`${ex}: dataAccess.update`);
         }
     },
 
-    // options: same as getMany
-    // options.fieldNames is ignored
-    deleteMany: (options, callback, errorCallback) => {
+    deleteOne: (options, callback, errorCallback) => {
         try {
-            options.fieldNames = ["PartitionKey", "RowKey"];
-            dataAccess.getMany(options, items => {
-                try {
-                    let queue = items;
-                    let itemCount = items.length;
-                    function deleteItem() {
-                        try {
-                            if (!queue.length) {
-                                callback({ numRecords: itemCount });
-                                return;
-                            }
-                            let item = queue.shift();
-                            tableService.deleteEntity(options.modelType.getTableName(), item, (err, resp) => {
-                                if (err) {
-                                    errorCallback(`${err}: dataAccess.deleteMany.deleteEntity`);
-                                    return;
-                                }
-                                deleteItem();
-                            });
-                        } catch (ex) {
-                            errorCallback(`${ex}: dataAccess.deleteMany.deleteItem`);
-                        }
-                    }
-                    deleteItem();
-                } catch (ex) {
-                    errorCallback(`${ex}: dataAccess.deleteMany.getMany`);
-                    return;
-                }
-            }, errorCallback)
+            dynamo.deleteItem(JSON.parse(event.body), callback);
         } catch (ex) {
-            errorCallback(`${ex}: dataAccess.deleteMany`);
+            errorCallback(`${ex}: dataAccess.deleteOne`);
         }
     }
 };

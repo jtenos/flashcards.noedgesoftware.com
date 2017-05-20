@@ -4,7 +4,6 @@ module.exports = (() => {
 
     const result = {
         Card: require("./card"),
-        JoeTest: require("./joetest"),
         Session: require("./session"),
         User: require("./user")
     };

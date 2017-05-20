@@ -1,0 +1,22 @@
+{
+  "name": "flashcards",
+  "version": "0.1.0",
+  "description": "Build-your-own flashcards app and services",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://jtenos@bitbucket.org/jtenos/flashcards.git"
+  },
+  "keywords": [
+    "flashcards"
+  ],
+  "author": "Joe Enos",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/jtenos/flashcards#readme",
+  "dependencies": {
+    "dynamodb-doc": "^1.0.0"
+  }
+}
