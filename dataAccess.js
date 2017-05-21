@@ -1,18 +1,13 @@
 "use strict";
 
-const dynamodbDoc = require("dynamodb-doc");
-const dynamo = new dynamodbDoc.DynamoDB();
+const aws = require("aws-sdk");
+const config = require("./config");
 
-/*
-        case 'DELETE':
-            dynamo.deleteItem(JSON.parse(event.body), done);
-        case 'GET':
-            dynamo.scan({ TableName: event.queryStringParameters.TableName }, done);
-        case 'POST':
-            dynamo.putItem(JSON.parse(event.body), done);
-        case 'PUT':
-            dynamo.updateItem(JSON.parse(event.body), done);
-*/
+aws.config.update({
+    region: config.awsRegion
+});
+
+const docClient = new aws.DynamoDB.DocumentClient();
 
 let dataAccess = module.exports = {
 
@@ -72,7 +67,14 @@ let dataAccess = module.exports = {
                 TableName: options.dataObject.getTableName(),
                 Item: options.dataObject
             };
-            dynamo.put(params, callback);
+
+            docClient.put(params, (err, data) => {
+                if (err) {
+                    errorCallback(err);
+                } else {
+                    callback(data);
+                }
+            });
         } catch (ex) {
             errorCallback(`${ex}: dataAccess.insert`);
         }
@@ -81,7 +83,36 @@ let dataAccess = module.exports = {
     // options: { dataObject }
     update: (options, callback, errorCallback) => {
         try {
-            dynamo.updateItem(JSON.parse(options.dataObject), callback);
+            var params = {
+                TableName: options.dataObject.getTableName()
+            };
+            params.Key = options.dataObject.getKey();
+
+            /*
+            var params = {
+                TableName:table,
+                Key:{
+                    "year": year,
+                    "title": title
+                },
+                UpdateExpression: "set info.rating = :r, info.plot=:p, info.actors=:a",
+                ExpressionAttributeValues:{
+                    ":r":5.5,
+                    ":p":"Everything happens all at once.",
+                    ":a":["Larry", "Moe", "Curly"]
+                },
+                ReturnValues:"UPDATED_NEW"
+            };
+
+            console.log("Updating the item...");
+            docClient.update(params, function(err, data) {
+                if (err) {
+                    console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+                } else {
+                    console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
+                }
+            });
+            */
         } catch (ex) {
             errorCallback(`${ex}: dataAccess.update`);
         }

@@ -1,11 +1,9 @@
 'use strict';
 
-console.log('Loading function');
-const doc = require('dynamodb-doc');
-const dynamo = new doc.DynamoDB();
-
 const allManagers = require("./managers/allManagers");
 const appManager = allManagers.app;
+
+const utils = require("./utils");
 
 /**
  * To scan a DynamoDB table, make a GET request with the TableName as a
@@ -29,22 +27,4 @@ exports.handler = (event, context, callback) => {
     });
     return;
 
-    switch (event.httpMethod) {
-        case 'DELETE':
-            dynamo.deleteItem(JSON.parse(event.body), done);
-            break;
-        case 'GET':
-            //done(null, "Hello");
-            dynamo.scan({ TableName: event.queryStringParameters.TableName }, done);
-            break;
-        case 'POST':
-            dynamo.putItem(JSON.parse(event.body), done);
-            break;
-        case 'PUT':
-            dynamo.updateItem(JSON.parse(event.body), done);
-            break;
-        default:
-            dynamo.scan({ TableName: "foo" }, done);
-            break;
-    }
 };

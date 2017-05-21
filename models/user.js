@@ -3,11 +3,7 @@
 module.exports = function(userID) {
     this.userID = userID;
 
-/*
-    this.getDynamoObject = () => {
-        return {
-            userID: { S: this.userID }
-        };
+    this.getKey = function() {
+        return { userID: this.userID };
     };
-    */
 };

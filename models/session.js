@@ -4,12 +4,7 @@ module.exports = function (userID, sessionID) {
     this.userID = userID;
     this.sessionID = sessionID;
 
-/*
-    this.getDynamoObject = () => {
-        return {
-            userID: { S: this.userID },
-            sessionID: { S: this.sessionID }
-        };
-    };*/
-    
+    this.getKey = function() {
+        return { userID: this.userID, sessionID: this.sessionID }
+    };
 };

@@ -17,6 +17,6 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/jtenos/flashcards#readme",
   "dependencies": {
-    "dynamodb-doc": "^1.0.0"
+    "aws-sdk": "^2.54.0"
   }
 }
