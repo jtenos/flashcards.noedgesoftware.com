@@ -1,0 +1,20 @@
+{
+  "name": "flashcards-web",
+  "version": "0.0.1",
+  "description": "Web app for flashcards",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compilejs": "babel --out-dir app app-es6"
+  },
+  "keywords": [
+    "flashcards"
+  ],
+  "author": "Joe Enos",
+  "license": "ISC",
+  "dependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-env": "^1.5.1"
+  }
+}
