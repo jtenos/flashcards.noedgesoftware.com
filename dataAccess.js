@@ -4,10 +4,12 @@ const aws = require("aws-sdk");
 const config = require("./config");
 
 aws.config.update({
-    region: config.awsRegion
+    region: config.awsRegion,
+    accessKeyId: config.accessKeyId,
+    secretAccessKeyId: config.secretAccessKeyId
 });
 
-const docClient = new aws.DynamoDB.DocumentClient();
+const dynamo = new aws.DyanmoDB();
 
 let dataAccess = module.exports = {
 
