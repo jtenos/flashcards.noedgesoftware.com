@@ -13,12 +13,13 @@ to remove all GUIDs for that email.
 
 "use strict";
 
+const dataAccess = require("../dataAccess");
+const User = require("../models/user");
+
 module.exports = {
     addUser: (query, callback) => {
-        callback({
-            email: query.email,
-            message: "Hello!"            
-        });
+        var options = { dataObject: new User(query.userID) };
+        dataAccess.insert(options, callback);
     },
 
     authenticate: (query, callback) => {

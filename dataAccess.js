@@ -6,35 +6,44 @@ const config = require("./config");
 aws.config.update({
     region: config.awsRegion,
     accessKeyId: config.accessKeyId,
-    secretAccessKeyId: config.secretAccessKeyId
+    secretAccessKey: config.secretAccessKey
 });
 
-const dynamo = new aws.DyanmoDB();
+const dynamo = new aws.DynamoDB();
+const docClient = new aws.DynamoDB.DocumentClient();
 
 let dataAccess = module.exports = {
 
-    // callback: (err, result, response)
     createTable: (tableName, callback, errorCallback) => {
         errorCallback("createTable Not implemented");
     },
 
     // same options as getMany
-    getOne: (options, callback, errorCallback) => {
-        dataAccess.getMany(options, items => callback(items[0]), errorCallback);
+    getOne: (options, callback) => {
+        dataAccess.getMany(options, (err, items) => {
+            if (err) {
+                callback(err);
+            } else {
+                callback(null, items[0]);
+            }
+        });
     },
 
     // options: { modelType, fieldNames, whereClauses }
     // whereClauses: [ TODO: FIGURE THIS OUT
     // ]
     // callback: function(items)
-
-    getMany: (options, callback, errorCallback) => {
+    getMany: (options, callback) => {
         try {
-            // TODO: Figure out defining columns and where clauses
-            dynamo.scan({
-                TableName: options.modelType.getTableName()
-            }, callback);
-
+            let tableName = options.modelType.getTableName();
+            //console.log(`Querying table ${tableName}`);
+            //docClient.query({
+            docClient.scan({
+                TableName: tableName
+            }, (err, data) => {
+                let items = (data ? data.Items : []);
+                callback(err, items);
+            });
             /*
             if (options.whereClauses && options.whereClauses.length) {
                 let whereClauseItems = [];
@@ -57,74 +66,56 @@ let dataAccess = module.exports = {
             }
             */
         } catch (ex) {
-            errorCallback(`${ex}: dataAccess.getMany`);
+            callback(`${ex}: dataAccess.getMany`, null);
         }
     },
 
     // options: { dataObject }
-    // callback: function()
-    insert: (options, callback, errorCallback) => {
+    insert: (options, callback) => {
         try {
             var params = {
                 TableName: options.dataObject.getTableName(),
                 Item: options.dataObject
             };
 
-            docClient.put(params, (err, data) => {
-                if (err) {
-                    errorCallback(err);
-                } else {
-                    callback(data);
-                }
-            });
+            docClient.put(params, callback);
         } catch (ex) {
-            errorCallback(`${ex}: dataAccess.insert`);
+            callback(`${ex}: dataAccess.insert`, null);
         }
     },
 
-    // options: { dataObject }
-    update: (options, callback, errorCallback) => {
+    // options: { 
+    // dataObject, // {/* the account object */}
+    // updateExpression, // "set currentBalance = :bal, balanceDate = :dt";
+    // updateValues // { bal: amount, dt: moment().format("YYYYMMDDHHmmss") }
+    // }
+    update: (options, callback) => {
         try {
             var params = {
-                TableName: options.dataObject.getTableName()
-            };
-            params.Key = options.dataObject.getKey();
-
-            /*
-            var params = {
-                TableName:table,
-                Key:{
-                    "year": year,
-                    "title": title
-                },
-                UpdateExpression: "set info.rating = :r, info.plot=:p, info.actors=:a",
-                ExpressionAttributeValues:{
-                    ":r":5.5,
-                    ":p":"Everything happens all at once.",
-                    ":a":["Larry", "Moe", "Curly"]
-                },
-                ReturnValues:"UPDATED_NEW"
+                TableName: options.dataObject.getTableName(),
+                Key: options.dataObject.getKey(),
+                UpdateExpression: options.updateExpression,
+                ExpressionAttributeValues: options.updateValues,
+                ReturnValues: "UPDATED_NEW"
             };
 
-            console.log("Updating the item...");
-            docClient.update(params, function(err, data) {
+            docClient.update(params, (err, data) => {
                 if (err) {
-                    console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+                    callback(err);
                 } else {
-                    console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
+                    callback(null, {});
                 }
             });
-            */
         } catch (ex) {
-            errorCallback(`${ex}: dataAccess.update`);
+            callback(`${ex}: dataAccess.update`);
         }
     },
 
-    deleteOne: (options, callback, errorCallback) => {
+    deleteOne: (options, callback) => {
         try {
             dynamo.deleteItem(JSON.parse(event.body), callback);
         } catch (ex) {
-            errorCallback(`${ex}: dataAccess.deleteOne`);
+            callback(`${ex}: dataAccess.deleteOne`);
         }
     }
 };
