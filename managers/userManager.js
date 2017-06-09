@@ -18,7 +18,7 @@ const User = require("../models/user");
 
 module.exports = {
     addUser: (query, callback) => {
-        var options = { dataObject: new User(query.userID) };
+        var options = { dataObject: new User(query.userID, query.email, query.phone) };
         dataAccess.insert(options, callback);
     },
 

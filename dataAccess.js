@@ -72,6 +72,7 @@ let dataAccess = module.exports = {
 
     // options: { dataObject }
     insert: (options, callback) => {
+        console.log("Inserting " + JSON.stringify(options.dataObject));
         try {
             var params = {
                 TableName: options.dataObject.getTableName(),

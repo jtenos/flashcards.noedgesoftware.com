@@ -1,7 +1,6 @@
 'use strict';
 
 const allManagers = require("./managers/allManagers");
-const appManager = allManagers.app;
 
 const utils = require("./utils");
 
