@@ -2,6 +2,7 @@
 
 let utils = module.exports = {
     createRandom: (numChars) => {
+        numChars = numChars || 20;
         if (!utils.randomChars) {
             utils.randomChars = [];
             for (let i = 48; i <= 57; ++i) { 

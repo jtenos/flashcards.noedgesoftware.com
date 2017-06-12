@@ -15,6 +15,7 @@ to remove all GUIDs for that email.
 
 const dataAccess = require("../dataAccess");
 const User = require("../models/user");
+const Session = require("../models/session");
 
 module.exports = {
     addUser: (query, callback) => {
@@ -22,7 +23,20 @@ module.exports = {
         dataAccess.insert(options, callback);
     },
 
-    authenticate: (query, callback) => {
-        // throw exception if unauthorized, else do nothing
+    generateSession: (query, callback) => {
+        var options = {
+        	modelType: User,
+        	retrievalType: "scan"
+        };
+
+        if (query.email) {
+        	options.whereClauses = { email: query.email };
+        } else if (query.phone) {
+        	options.whereClauses = { phone: query.phone };
+        } else {
+        	return callback("Must provide email or phone");
+        }
+
+        dataAccess.getMany(options, callback);
     }
 };

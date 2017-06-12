@@ -14,8 +14,41 @@ const docClient = new aws.DynamoDB.DocumentClient();
 
 let dataAccess = module.exports = {
 
-    createTable: (tableName, callback, errorCallback) => {
-        errorCallback("createTable Not implemented");
+    // options: { modelType }
+    createTable: (options, callback) => {
+        let params = {
+            TableName: options.modelType.getTableName(),
+            ProvisionedThroughput: {
+                ReadCapacityUnits: 1, 
+                WriteCapacityUnits: 1
+            }
+        };
+        let primaryKey = new options.modelType().getKey();
+        let fieldNames = [];
+        for (let k in primaryKey) {
+            if (primaryKey.hasOwnProperty(k)) {
+                fieldNames.push(k);
+            }
+        }
+        if (fieldNames.length == 1) {
+            params.KeySchema = [
+                { AttributeName: fieldNames[0], KeyType: "HASH" }
+            ];
+            params.AttributeDefinitions = [
+                { AttributeName: fieldNames[0], AttributeType: "S" }
+            ];
+        } else if (fieldNames.length == 2) {
+            params.KeySchema = [
+                { AttributeName: fieldNames[0], KeyType: "HASH" },
+                { AttributeName: fieldNames[1], KeyType: "RANGE" }
+            ];
+            params.AttributeDefinitions = [
+                { AttributeName: fieldNames[0], AttributeType: "S" },
+                { AttributeName: fieldNames[1], AttributeType: "S" }
+            ];
+        }
+
+        dynamo.createTable(params, callback);
     },
 
     // same options as getMany
@@ -29,44 +62,54 @@ let dataAccess = module.exports = {
         });
     },
 
-    // options: { modelType, fieldNames, whereClauses }
-    // whereClauses: [ TODO: FIGURE THIS OUT
-    // ]
-    // callback: function(items)
+    // options: { modelType, whereClauses, retrievalType }
+    // whereClauses: { personID: "123", name: "John" }
+    // retrievalType: "query" or "scan" - defaults to "query" - if you're not querying by primary key, then you must select "scan"
     getMany: (options, callback) => {
         try {
-            let tableName = options.modelType.getTableName();
-            //console.log(`Querying table ${tableName}`);
-            //docClient.query({
-            docClient.scan({
-                TableName: tableName
-            }, (err, data) => {
-                let items = (data ? data.Items : []);
-                callback(err, items);
-            });
-            /*
-            if (options.whereClauses && options.whereClauses.length) {
-                let whereClauseItems = [];
-                let whereClauseValues = [];
-                options.whereClauses.forEach(whereClause => {
-                    let operator = whereClause.operator || "eq";
-                    whereClauseItems.push(`${whereClause.name} ${operator} ?`);
-                    whereClauseValues.push(whereClause.value);
-                });
-                let whereText = "";
-                while (whereClauseItems.length) {
-                    let item = whereClauseItems.shift();
-                    if (whereText) {
-                        whereText += " and ";
-                    }
-                    whereText += `${item}`;
-                }
 
-                query = query.where(whereText, whereClauseValues);
+            options.retrievalType = options.retrievalType == "scan" ? "scan" : "query";
+            let conditionPropertyName = options.retrievalType == "scan" ? "FilterExpression" : "KeyConditionExpression";
+
+            let params = {
+                TableName : options.modelType.getTableName()
+            };
+
+            if (options.whereClauses) {
+                let expressionAttributeNames = {};
+                let expressionAttributeValues = {};
+                let conditionExpression = "";
+
+                for (let key in options.whereClauses) {
+                    if (options.whereClauses.hasOwnProperty(key)) {
+                        let hashKey = "#" + key;
+                        let colonKey = ":" + key;
+
+                        expressionAttributeNames[hashKey] = key;
+                        expressionAttributeValues[colonKey] = options.whereClauses[key];
+
+                        if (conditionExpression) {
+                            conditionExpression += " and ";
+                        }
+                        conditionExpression += `${hashKey} = ${colonKey}`;
+                    }
+                }
+                params.ExpressionAttributeNames = expressionAttributeNames;
+                params.ExpressionAttributeValues = expressionAttributeValues;
+                params[conditionPropertyName] = conditionExpression;
             }
-            */
+
+            docClient[options.retrievalType](params, (err, data) => {
+                if (err) {
+                    callback(err);
+                } else {
+                    let items = data ? data.Items : [];
+                    callback(undefined, items);
+                }
+            });
+
         } catch (ex) {
-            callback(`${ex}: dataAccess.getMany`, null);
+            callback(`${ex}: dataAccess.getMany`);
         }
     },
 

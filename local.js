@@ -3,9 +3,61 @@
 const index = require("./index");
 const utils = require("./utils");
 
+index.handler({
+    query: {
+        mgr: "user",
+        func: "generateSession",
+        //email: "joe@jtenos.com"
+        phone: "6022288125"
+    }
+}, null, (err, resp) =>{
+    if (err) {
+        console.error("ERR");
+        console.error(err);
+    } else { 
+        console.log(JSON.stringify(resp));
+    }
+});
+
+
+
+/********* CREATE USER ***********
+index.handler({
+    query: {
+        mgr: "user",
+        func: "addUser",
+        userID: utils.createRandom(),
+        email: "joe@jtenos.com",
+        phone: "6022288125"
+    }
+}, null, (err, resp) => {
+    if (err) {
+        console.error(err);
+    } else {
+        console.log("Success");
+    }
+});
+*********  ***********/
+
+/******** CALL INIT *********
+index.handler({
+    query: {
+        mgr: "app", func: "init"
+    }
+}, null, (err, resp) => {
+    if (err) {
+        console.error(err);
+    } else {
+        resp.forEach(result => {
+            console.log(`tableName: ${result.tableName}, success: ${result.success}, err: ${result.err}`);
+        });
+    }
+});
+********* *********/
+
 //const userID = utils.createRandom(20);
 //console.log(userID);
-
+/*
 index.handler({ query: { mgr: "card", func: "getCards", userID: "WdFqx8lAQc4AScmCzXjD" } }, null, (err, response) => {
     if (err) {
         console.error(err);
@@ -15,7 +67,7 @@ index.handler({ query: { mgr: "card", func: "getCards", userID: "WdFqx8lAQc4AScm
         });
     }
 });
-
+*/
 /*
 let items = getItems();
 function processItem() {
@@ -34,7 +86,7 @@ function processItem() {
         query: { 
             mgr:"card",
             func:"addCard",
-            userID:"WdFqx8lAQc4AScmCzXjD",
+            userID:"of00g898RDu0ZCJt3ZJz",
             front:front,
             back1:back1,
             back2:back2 

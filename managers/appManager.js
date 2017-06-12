@@ -2,37 +2,44 @@
 
 const dataAccess = require("../dataAccess");
 const allModels = require("../models/allModels");
-const User = allModels.User;
 const utils = require("../utils");
 
 module.exports = {
 
     init: (query, callback) => {
-        let tableNames = [];
+        let modelTypes = [];
+        let results = [];
         try {
             for (let key in allModels) {
                 if (allModels.hasOwnProperty(key)) {
-                    tableNames.push(allModels[key].getTableName());
+                    modelTypes.push(allModels[key]);
                 }
             }
         } catch (ex) {
             callback(`${ex}: app.init`);
         }
 
-        function go() {
-            let tableName = tableNames.shift();
-            if (!tableName) {
-                callback(null, { message:"OK" });
-                return;
-            }
-            dataAccess.createTable(tableName, (err, data) => {
-                if (err) {
-                    callback(err, null);
-                } else {
-                    go();
-                }
+        let seq = Promise.resolve();
+        modelTypes.forEach(modelType => {
+            seq = seq.then(() => {
+                return new Promise((resolve, reject) => {
+                    dataAccess.createTable({ modelType: modelType }, (err, data) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(modelType);
+                        }
+                    });
+                });
+            }).then(data => {
+                results.push({ modelType: modelType, success: true });
+            }).catch(err => {
+                results.push({ modelType: modelType, success: false, err: err })
             });
-        }
-        go();
+        });
+
+        seq = seq.then(() => {
+            callback(undefined, results);
+        });
     }
 };
