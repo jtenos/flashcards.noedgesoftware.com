@@ -17,6 +17,6 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/jtenos/flashcards#readme",
   "dependencies": {
-    "aws-sdk": "^2.54.0"
+    
   }
 }
