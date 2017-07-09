@@ -3,7 +3,7 @@
 module.exports = (function() {
 
     var result = {
-        app: require("./appManager"),
+        //a/pp: require("./appManager"),
         card: require("./cardManager"),
         user: require("./userManager")
     };

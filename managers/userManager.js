@@ -19,7 +19,7 @@ const Session = require("../models/session");
 
 module.exports = {
     addUser: (query, callback) => {
-        var options = { dataObject: new User(query.userID, query.email, query.phone) };
+        var options = { model: new User(query.userID, query.email, query.phone) };
         dataAccess.insert(options, callback);
     },
 

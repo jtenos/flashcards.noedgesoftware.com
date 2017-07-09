@@ -1,7 +1,7 @@
 'use strict';
 
 const allManagers = require("./managers/allManagers");
-
+const dataAccess = require("./dataAccess");
 const utils = require("./utils");
 
 exports.handler = (event, context, callback) => {
