@@ -1,55 +1,27 @@
 "use strict";
 
-const aws = require("aws-sdk");
+const azure = require("azure-storage");
+const entGen = azure.TableUtilities.entityGenerator;
 const config = require("./config");
+const utils = require("./utils");
 
-aws.config.update({
-    region: config.awsRegion,
-    accessKeyId: config.accessKeyId,
-    secretAccessKey: config.secretAccessKey
-});
+const tableService = azure.createTableService(config.azureConnectionString);
 
-const dynamo = new aws.DynamoDB();
-const docClient = new aws.DynamoDB.DocumentClient();
-
-let dataAccess = module.exports = {
+module.exports = {
 
     // options: { modelType }
     createTable: (options, callback) => {
-        let params = {
-            TableName: options.modelType.getTableName(),
-            ProvisionedThroughput: {
-                ReadCapacityUnits: 1, 
-                WriteCapacityUnits: 1
-            }
-        };
-        let primaryKey = new options.modelType().getKey();
-        let fieldNames = [];
-        for (let k in primaryKey) {
-            if (primaryKey.hasOwnProperty(k)) {
-                fieldNames.push(k);
-            }
-        }
-        if (fieldNames.length == 1) {
-            params.KeySchema = [
-                { AttributeName: fieldNames[0], KeyType: "HASH" }
-            ];
-            params.AttributeDefinitions = [
-                { AttributeName: fieldNames[0], AttributeType: "S" }
-            ];
-        } else if (fieldNames.length == 2) {
-            params.KeySchema = [
-                { AttributeName: fieldNames[0], KeyType: "HASH" },
-                { AttributeName: fieldNames[1], KeyType: "RANGE" }
-            ];
-            params.AttributeDefinitions = [
-                { AttributeName: fieldNames[0], AttributeType: "S" },
-                { AttributeName: fieldNames[1], AttributeType: "S" }
-            ];
-        }
-
-        dynamo.createTable(params, callback);
+        tableService.createTableIfNotExists(options.modelType.getTableName(), callback);
     },
+
+    // options: { entity }
+    insert: (options, callback) {
+        tableService.insertEntity(entity.getTableName(), entity, callback);
+    },
+
+
+};
+
 
     // same options as getMany
     getOne: (options, callback) => {
@@ -113,21 +85,6 @@ let dataAccess = module.exports = {
         }
     },
 
-    // options: { dataObject }
-    insert: (options, callback) => {
-        console.log("Inserting " + JSON.stringify(options.dataObject));
-        try {
-            var params = {
-                TableName: options.dataObject.getTableName(),
-                Item: options.dataObject
-            };
-
-            docClient.put(params, callback);
-        } catch (ex) {
-            callback(`${ex}: dataAccess.insert`, null);
-        }
-    },
-
     // options: { 
     // dataObject, // {/* the account object */}
     // updateExpression, // "set currentBalance = :bal, balanceDate = :dt";
@@ -163,3 +120,54 @@ let dataAccess = module.exports = {
         }
     }
 };
+
+
+/*
+
+
+var item = {
+    PartitionKey: entGen.String("items"),
+    RowKey: util.createGuid(),
+    name: "John Doe",
+    age: 34
+};
+
+
+function select(callback) {
+    var query = new azure.TableQuery()
+        .select(["PartitionKey", "RowKey", "name", "age"]);
+    tableService.queryEntities("mytable", query, null, callback);
+}
+
+function deleteItem(item, callback) {
+    tableService.deleteEntity("mytable", item, callback);
+}
+
+var insertPromise = new Promise((resolve, reject) => {
+    insert(item, (err, resp) => {
+        if (err) {
+            reject(err);
+        } else {
+            resolve(resp);
+        }
+    });
+});
+
+insertPromise.then(res => {
+    select((err, resp) => {
+        resp.entries.forEach(x => {
+            deleteItem(x, (err, res) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                } else {
+                    console.log("Deleted");
+                }
+            });
+            console.log(JSON.stringify(x));
+        });
+    });
+})["catch"](x => console.error(x));
+
+
+*/

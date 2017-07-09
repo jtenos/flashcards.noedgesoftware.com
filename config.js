@@ -1,7 +1,5 @@
 "use strict";
 
 module.exports = {
-    awsRegion: "us-east-2",
-    accessKeyId: "AKIAI73UZ646SON2HIUA",
-    secretAccessKey: "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"
+    azureConnectionString: "DefaultEndpointsProtocol=https;AccountName=noedgeflashcardsdata;AccountKey=0Mg2s4DHx6Cecmhbyq2MuGbUfT3Eb9ugvNaL/njTmJ1X9jKZF6D0Pkiwzf3sYXilDq745BEbybQkjtnygmmuoA==;EndpointSuffix=core.windows.net"
 };

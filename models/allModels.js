@@ -5,7 +5,8 @@ module.exports = (() => {
     const result = {
         Card: require("./card"),
         Session: require("./session"),
-        User: require("./user")
+        User: require("./user"),
+        CardGroup: require("./cardgroup")
     };
 
     for (let key in result) {
