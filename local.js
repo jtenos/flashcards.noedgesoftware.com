@@ -3,7 +3,16 @@
 const index = require("./index");
 const utils = require("./utils");
 const dataAccess = require("./dataAccess");
+const User = require("./models/user");
 
+dataAccess.getByPartition({ modelType: User, partitionKey: "user" }, (err, res) => {
+    res.forEach(x => {
+        console.log(x);
+        dataAccess.delete({model: x});
+    });
+});
+
+/*
 dataAccess.init((err, res) => {
     if (err) {
         console.error(err);
@@ -26,26 +35,9 @@ dataAccess.init((err, res) => {
         });
     }
 })
+*/
 
         
-
-/********* CREATE USER ***********
-index.handler({
-    query: {
-        mgr: "user",
-        func: "addUser",
-        userID: utils.createRandom(),
-        email: "joe@jtenos.com",
-        phone: "6022288125"
-    }
-}, null, (err, resp) => {
-    if (err) {
-        console.error(err);
-    } else {
-        console.log("Success");
-    }
-});
-*********  ***********/
 
 /******** CALL INIT *********
 index.handler({

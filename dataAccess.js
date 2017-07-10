@@ -75,7 +75,7 @@ let dataAccess = module.exports = {
     // options: { modelType, partitionKey }
     getByPartition: (options, callback) => {
         let query = new azure.TableQuery().where('PartitionKey eq ?', options.partitionKey);
-        tableSvc.queryEntities(options.modelType.getTableName(), query, null, (err, res) => {
+        tableService.queryEntities(options.modelType.getTableName(), query, null, (err, res) => {
             if (err) {
                 callback(err);
             } else {
