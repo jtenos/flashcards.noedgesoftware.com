@@ -4,8 +4,7 @@
   "description": "Web app for flashcards",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "compilejs": "babel --out-dir app app-es6"
+    "start": "babel --out-dir app app-es6 --watch & live-server"
   },
   "keywords": [
     "flashcards"

@@ -1,26 +1,30 @@
 "use strict";
 
 jQuery(document).ready(() => {
-    jQuery.ajax({
+    jQuery.ajax({ 
         type: "get",
         url: "templates.html",
         dataType: "html"
     }).done(function(result) {
-        jQuery("#templates-container").html(result);
+        var $templatesContainer = jQuery("<div>" + result + "</div>");
+        flashcardsTemplates.login = $templatesContainer.find("#login-template").html();
+        let sessionID = Cookies.get("sessionid");
+        if (sessionID) {
+            flashcardsApp.showMenu();
+        } else {
+            flashcardsApp.showLogin();
+        }
     });
-    let sessionID = Cookies.get("sessionid");
-    if (sessionID) {
-        showMenu();
-    } else {
-        showLogin();
-    }
 });
 
 window.flashcardsApp = {
     showLogin: () => {
-        let template = jQuery("#login-template").html();
-        let html = Mustache.render(template, {});
+        let html = Mustache.render(flashcardsTemplates.login, {});
         jQuery("#main-view-container").html(html);
+        jQuery("#main-view-container button").click(function(e) {
+            e.preventDefault();
+            console.log("You clicked a button!");
+        });
     },
 
     showMenu: () => {
