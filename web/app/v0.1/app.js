@@ -23,7 +23,23 @@ window.flashcardsApp = {
         jQuery("#main-view-container").html(html);
         jQuery("#main-view-container button").click(function (e) {
             e.preventDefault();
-            console.log("You clicked a button!");
+            var email = jQuery("#login-email").val();
+            var phone = jQuery("#login-phone").val();
+
+            function loginCompleted(err, result) {
+                console.log("loginCompleted");
+                if (err) {
+                    console.error("ERROR: " + err);
+                } else {
+                    console.log(result);
+                }
+            }
+
+            if (email) {
+                flashcardsServices.execute("user", "loginEmail", { email: email }, loginCompleted);
+            } else if (phone) {
+                flashcardsServices.execute("user", "loginPhone", { phone: phone }, loginCompleted);
+            }
         });
     },
 
