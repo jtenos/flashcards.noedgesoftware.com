@@ -17,11 +17,42 @@ const dataAccess = require("../dataAccess");
 const User = require("../models/user");
 const Session = require("../models/session");
 const utils = require("../utils");
+const config = require("../config");
 
 module.exports = {
     addUser: (query, callback) => {
+        // TODO: ensure user doesn't already have an account
+
         var options = { model: new User(query.userID, query.email, query.phone) };
-        dataAccess.insert(options, callback);
+        console.log("inserting data");
+        dataAccess.insert(options, (err, res) => {
+            console.log("err:");
+            console.log(err);
+            console.log("res:");
+            console.log(res);
+            console.log("query:");
+            console.log(query);
+
+            if (err) {
+                return callback(err);
+            }
+
+            if (query.email) {
+                utils.sendMail({
+                    from: config.adminEmailAddress,
+                    to: query.email,
+                    subject: "Flashcards Registration",
+                    textBody: "Congratulations! Your account was created successfully.",
+                    htmlBody: "<strong>Congratulations!</strong> Your account was created successfully."
+                }, (err, res) => {
+                    if (err) {
+                        return callback(err);
+                    }
+
+                    callback(null, "User created");
+                });
+            }
+        });
     },
 
     generateSession: (query, callback) => {

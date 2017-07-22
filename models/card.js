@@ -3,7 +3,7 @@
 const azure = require("azure-storage");
 const entGen = azure.TableUtilities.entityGenerator;
 
-module.exports = function (cardGroupID, cardID, front, back1, back2) {
+let Card = module.exports = function (cardGroupID, cardID, front, back1, back2) {
     this.cardGroupID = cardGroupID;
     this.cardID = cardID;
     this.front = front;
@@ -19,4 +19,14 @@ module.exports = function (cardGroupID, cardID, front, back1, back2) {
 			back2: entGen.String(this.back2)
     	};
     };
+};
+
+Card.fromEntity = entity => {
+    return new Card(
+        entity.PartitionKey._,
+        entity.RowKey._,
+        entity.front ? entity.front._ : null,
+        entity.back1 ? entity.back1._ : null,
+        entity.back2 ? entity.back2._ : null
+    );
 };

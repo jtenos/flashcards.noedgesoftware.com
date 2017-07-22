@@ -7,9 +7,16 @@ const User = require("./models/user");
 const Session = require("./models/session");
 const userManager = require("./managers/userManager");
 
-userManager.addUser(new User(utils.createRandom(), null, "6022288125"), () => {
+console.log("adding user");
+userManager.addUser(new User(utils.createRandom(), "info@noedgesoftware.com", null), (err, res) => {
+    console.log("err:");
+    console.log(err);
+    console.log("res:");
+    console.log(res);
+
+    console.log("generating session");
     userManager.generateSession({
-        phone:"6022288125"
+        email:"info@noedgesoftware.com"
     }, (err, res) => {
         console.log("err:");
         console.log(err);

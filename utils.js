@@ -26,6 +26,7 @@ let utils = module.exports = {
         return result;
     },
 
+    // options: { from, to, subject, textBody, htmlBody }
     sendMail: (options, callback) => {
         let client = new postmark.Client(config.postmarkKey);
         client.sendEmail({
@@ -34,7 +35,7 @@ let utils = module.exports = {
             Subject: options.subject,
             textBody: options.textBody,
             htmlBody: options.htmlBody
-        } ,callback);
+        }, callback);
     },
 
     MailMessage: function (from, to, subject, textBody, htmlBody) {
