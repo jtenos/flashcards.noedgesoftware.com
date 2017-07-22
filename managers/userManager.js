@@ -16,6 +16,7 @@ to remove all GUIDs for that email.
 const dataAccess = require("../dataAccess");
 const User = require("../models/user");
 const Session = require("../models/session");
+const utils = require("../utils");
 
 module.exports = {
     addUser: (query, callback) => {
@@ -29,14 +30,40 @@ module.exports = {
         	retrievalType: "scan"
         };
 
-        if (query.email) {
-        	options.whereClauses = { email: query.email };
-        } else if (query.phone) {
-        	options.whereClauses = { phone: query.phone };
-        } else {
-        	return callback("Must provide email or phone");
-        }
+        let user = null;
+        dataAccess.getByPartition({
+            modelType: User,
+            partitionKey: "user"
+        }, (err, items) => {
+            if (err) {
+                return callback(err);
+            }
+            if (!items) {
+                return callback("Invalid result");
+            }
+            for (let i = 0; i < items.length; ++i) {
+                if (query.email && items[i].email == query.email) {
+                    user = items[i];
+                    break;
+                } else if (query.phone && items[i].phone == query.phone) {
+                    user = items[i];
+                    break;
+                }
+            }
 
-        dataAccess.getMany(options, callback);
+            if (!user) {
+                return callback("User not found");
+            }
+
+            let session = new Session(user.userID, utils.createRandom());
+            dataAccess.insert({
+                model: session
+            }, (err, res) => {
+                if (err) {
+                    return callback(err);
+                }
+                return callback(null, session);
+            });
+        });
     }
 };

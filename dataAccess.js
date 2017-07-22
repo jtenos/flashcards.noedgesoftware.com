@@ -52,7 +52,10 @@ let dataAccess = module.exports = {
 
     // options: { model }
     delete: (options, callback) => {
-        tableService.deleteEntity(options.model.getTableName(), options.model, callback);
+        var entity = options.model.getEntity();
+        console.log("deleting entity from table", options.model.getTableName());
+        console.log(JSON.stringify(entity));
+        tableService.deleteEntity(options.model.getTableName(), entity, callback);
     },
 
     // options: { modelType, partitionKey, rowKey }
@@ -61,13 +64,7 @@ let dataAccess = module.exports = {
             if (err) {
                 callback(err);
             } else {
-                let result = new options.modelType();
-                for (let key in res) {
-                    if (res.hasOwnProperty(key)) {
-                        result[key] = res[key];
-                    }
-                }
-                callback(null, result);
+                callback(null, options.modelType.fromEntity(res));
             }
         });
     },
@@ -79,15 +76,7 @@ let dataAccess = module.exports = {
             if (err) {
                 callback(err);
             } else {
-                let result = res.entries.map(x => {
-                    let model = new options.modelType();
-                    for (let key in x) {
-                        if (x.hasOwnProperty(key)) {
-                            model[key] = x[key];
-                        }
-                    }
-                    return model;
-                });
+                let result = res.entries.map(options.modelType.fromEntity);
                 callback(null, result);
             }
         });

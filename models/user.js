@@ -3,12 +3,12 @@
 const azure = require("azure-storage");
 const entGen = azure.TableUtilities.entityGenerator;
 
-module.exports = function(userID, email, phone) {
+let User = module.exports = function(userID, email, phone) {
     this.userID = userID;
     this.email = email;
     this.phone = phone;
 
-    this.getEntity = function() {
+    this.getEntity = () => {
         return {
             PartitionKey: entGen.String("user"),
             RowKey: entGen.String(this.userID),
@@ -17,3 +17,11 @@ module.exports = function(userID, email, phone) {
         };
     };
 };
+
+User.fromEntity = entity => {
+    return new User(
+        entity.RowKey._,
+        entity.email ? entity.email._ : null,
+        entity.phone ? entity.phone._ : null
+    );
+}

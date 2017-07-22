@@ -3,7 +3,7 @@
 const azure = require("azure-storage");
 const entGen = azure.TableUtilities.entityGenerator;
 
-module.exports = function (userID, sessionID) {
+let Session = module.exports = function (userID, sessionID) {
     this.userID = userID;
     this.sessionID = sessionID;
 
@@ -14,4 +14,11 @@ module.exports = function (userID, sessionID) {
 			userID: entGen.String(this.userID)
     	};
     };
+};
+
+Session.fromEntity = entity => {
+    return new Session(
+        entity.userID ? entity.userID._ : null,
+        entity.RowKey._
+    );
 };

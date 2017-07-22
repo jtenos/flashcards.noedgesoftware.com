@@ -1,5 +1,8 @@
 "use strict";
 
+const postmark = require("postmark");
+const config = require("./config");
+
 let utils = module.exports = {
     createRandom: (numChars) => {
         numChars = numChars || 20;
@@ -21,5 +24,24 @@ let utils = module.exports = {
             result += utils.randomChars[Math.floor(Math.random() * utils.randomChars.length)]; 
         }
         return result;
+    },
+
+    sendMail: (options, callback) => {
+        let client = new postmark.Client(config.postmarkKey);
+        client.sendEmail({
+            From: options.from,
+            To: options.to,
+            Subject: options.subject,
+            textBody: options.textBody,
+            htmlBody: options.htmlBody
+        } ,callback);
+    },
+
+    MailMessage: function (from, to, subject, textBody, htmlBody) {
+        this.from = from;
+        this.to = to;
+        this.subject = subject;
+        this.textBody = textBody;
+        this.htmlBody = htmlBody;
     }
 };

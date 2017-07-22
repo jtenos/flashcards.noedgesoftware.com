@@ -4,14 +4,45 @@ const index = require("./index");
 const utils = require("./utils");
 const dataAccess = require("./dataAccess");
 const User = require("./models/user");
+const Session = require("./models/session");
+const userManager = require("./managers/userManager");
 
-dataAccess.getByPartition({ modelType: User, partitionKey: "user" }, (err, res) => {
-    res.forEach(x => {
-        console.log(x);
-        dataAccess.delete({model: x});
+userManager.addUser(new User(utils.createRandom(), null, "6022288125"), () => {
+    userManager.generateSession({
+        phone:"6022288125"
+    }, (err, res) => {
+        console.log("err:");
+        console.log(err);
+        console.log("res:");
+        console.log(res);
+
+        clearDatabase();
     });
 });
 
+
+
+function clearDatabase() {
+    dataAccess.getByPartition({ modelType: User, partitionKey: "user" }, (err, res) => {
+        console.log("users");
+        res.forEach(x => {
+            console.log(x);
+            dataAccess.delete({model: x}, () => {});
+        });
+    });
+
+    dataAccess.getByPartition({ modelType: Session, partitionKey: "session" }, (err, res) => {
+        console.log("sessions");
+        res.forEach(x => {
+            console.log(x);
+            dataAccess.delete({model: x}, () => {});
+        });
+    });
+}
+
+/*
+process.exit(0);
+*/
 /*
 dataAccess.init((err, res) => {
     if (err) {
