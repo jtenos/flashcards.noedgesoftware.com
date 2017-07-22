@@ -7,26 +7,16 @@ const User = require("./models/user");
 const Session = require("./models/session");
 const userManager = require("./managers/userManager");
 
-console.log("adding user");
-userManager.addUser(new User(utils.createRandom(), "info@noedgesoftware.com", null), (err, res) => {
+userManager.generateSession({
+    email:"info@noedgesoftware.com"
+}, (err, res) => {
     console.log("err:");
     console.log(err);
     console.log("res:");
     console.log(res);
 
-    console.log("generating session");
-    userManager.generateSession({
-        email:"info@noedgesoftware.com"
-    }, (err, res) => {
-        console.log("err:");
-        console.log(err);
-        console.log("res:");
-        console.log(res);
-
-        clearDatabase();
-    });
+    clearDatabase();
 });
-
 
 
 function clearDatabase() {
@@ -34,7 +24,7 @@ function clearDatabase() {
         console.log("users");
         res.forEach(x => {
             console.log(x);
-            dataAccess.delete({model: x}, () => {});
+            dataAccess.delete({model: x}, function(){});
         });
     });
 
@@ -42,7 +32,7 @@ function clearDatabase() {
         console.log("sessions");
         res.forEach(x => {
             console.log(x);
-            dataAccess.delete({model: x}, () => {});
+            dataAccess.delete({model: x}, function(){});
         });
     });
 }

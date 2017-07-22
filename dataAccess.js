@@ -11,8 +11,11 @@ const tableService = azure.createTableService(config.azureConnectionString);
 let dataAccess = module.exports = {
 
     init: (callback) => {
+        callback = callback || function(){};
+
         function createTableForModel(callback) {
-            console.log("callback is a", typeof callback);
+            callback = callback || function(){};
+
             if (!modelTypes.length){
                 callback(null, {});
                 return;
@@ -39,6 +42,8 @@ let dataAccess = module.exports = {
 
     // options: { modelType }
     createTable: (options, callback) => {
+        callback = callback || function(){};
+
         let tableName = options.modelType.getTableName();
         console.log("Creating table", tableName);
         tableService.createTableIfNotExists(tableName, callback);
@@ -46,12 +51,16 @@ let dataAccess = module.exports = {
 
     // options: { model }
     insert: (options, callback) => {
+        callback = callback || function(){};
+
         let tableName = options.model.getTableName();
         tableService.insertEntity(tableName, options.model.getEntity(), callback);
     },
 
     // options: { model }
     delete: (options, callback) => {
+        callback = callback || function(){};
+
         var entity = options.model.getEntity();
         console.log("deleting entity from table", options.model.getTableName());
         console.log(JSON.stringify(entity));
@@ -60,6 +69,8 @@ let dataAccess = module.exports = {
 
     // options: { modelType, partitionKey, rowKey }
     getOne: (options, callback) => {
+        callback = callback || function(){};
+
         tableService.retrieveEntity(options.modelType.getTableName(), options.partitionKey, options.rowKey, (err, res) => {
             if (err) {
                 callback(err);
@@ -71,7 +82,24 @@ let dataAccess = module.exports = {
 
     // options: { modelType, partitionKey }
     getByPartition: (options, callback) => {
+        callback = callback || function(){};
+
         let query = new azure.TableQuery().where('PartitionKey eq ?', options.partitionKey);
+        tableService.queryEntities(options.modelType.getTableName(), query, null, (err, res) => {
+            if (err) {
+                callback(err);
+            } else {
+                let result = res.entries.map(options.modelType.fromEntity);
+                callback(null, result);
+            }
+        });
+    },
+
+    // options: { modelType, whereClause (question marks as params), whereParameters (array) }
+    getByWhereClause: (options, callback) => {
+        callback = callback || function(){};
+
+        let query = new azure.TableQuery().where(options.whereClause, ...options.whereParameters)
         tableService.queryEntities(options.modelType.getTableName(), query, null, (err, res) => {
             if (err) {
                 callback(err);
